@@ -88,3 +88,7 @@ def read_events(filepath, ASIC_number):
         events[i, :] = data[2]
 
     return events
+
+
+def get_events(events, ch):
+    return events[:, ch]
