@@ -9,6 +9,7 @@ from read_pedestals import *
 # Filepaths for x-ray and pedestal
 filepath_xray_data = "xray_data\IT_400_xray_205_FTh_3mins_tau4.txt"
 filepath_pedestal_data = "pedestal_data\L4R0M0_Pedestals.dat"
+folder_name = "IT_400_xray_205_FTh_3mins_tau4"
 
 # Configuration data
 ch_min = 0
@@ -17,7 +18,10 @@ ASIC_number = 0
 pt = 4
 
 channels = range(ch_min, ch_max + 1)
-output_folder_path = r"C:\Users\ghisl\Documents\GitHub\GAPS_x-ray_calibration\output"
+output_folder_path = os.path.join("output", folder_name)
+
+if not os.path.exists(output_folder_path):
+    os.mkdir(output_folder_path)
 
 # Events per channel organised in columns
 events = read_events(filepath_xray_data, ASIC_number)
@@ -36,7 +40,7 @@ raw_plot_folder = os.path.join(raw_main_folder, "plots")
 if not os.path.exists(raw_plot_folder):
     os.mkdir(raw_plot_folder)
 
-print("\n***Saving raw data plots***")
+print("\n***Saving raw data plots***\n")
 for ch in channels:
     plt.clf()
     binwidth = 1
@@ -56,9 +60,9 @@ for ch in channels:
         "Raw data for channel " + str(ch) + " at tau " + str(pt),
         fontweight="bold",
     )
-    raw_data_plot = os.path.join(
-        raw_plot_folder, "ch" + str(ch) + "_" + "pt" + str(pt) + "_raw.pdf"
-    )
+
+    filename_raw_data_plot = "ch" + str(ch) + "_" + "pt" + str(pt) + "_raw.pdf"
+    raw_data_plot = os.path.join(raw_plot_folder, filename_raw_data_plot)
     plt.savefig(raw_data_plot)
 
     raw_data_folder = os.path.join(raw_main_folder, "data")
@@ -67,9 +71,8 @@ for ch in channels:
         os.mkdir(raw_data_folder)
 
     # Write raw data to file
-    raw_data_file = os.path.join(
-        raw_data_folder, "ch" + str(ch) + "_" + "pt" + str(pt) + "_raw.dat"
-    )
+    filename_raw_data_file = "ch" + str(ch) + "_" + "pt" + str(pt) + "_raw.dat"
+    raw_data_file = os.path.join(raw_data_folder, filename_raw_data_file)
     with open(
         raw_data_file,
         "w",
@@ -78,8 +81,8 @@ for ch in channels:
             fp.write(str(item) + "\n")
 
     print("*Saved ch. " + str(ch) + "*")
-    print("plot: " + str(raw_data_plot))
-    print("data: " + str(raw_data_file) + "\n")
+    print("plot: " + str(filename_raw_data_plot))
+    print("data: " + str(filename_raw_data_file) + "\n")
 
 # Raw data histogram per channel with pedestal subtracted
 raw_noped_main_folder = os.path.join(output_folder_path, "raw_no-pedestal_data")
@@ -92,7 +95,7 @@ raw_noped_plot_folder = os.path.join(raw_noped_main_folder, "plots")
 if not os.path.exists(raw_noped_plot_folder):
     os.mkdir(raw_noped_plot_folder)
 
-print("\n***Saving raw data plots without pedestal***")
+print("\n***Saving raw data plots without pedestal***\n")
 for ch in channels:
     plt.clf()
     binwidth = 1
@@ -116,9 +119,12 @@ for ch in channels:
         fontweight="bold",
     )
 
+    filename_raw_noped_data_plot = (
+        "ch" + str(ch) + "_" + "pt" + str(pt) + "_raw_no-pedestal.pdf"
+    )
     raw_noped_data_plot = os.path.join(
         raw_noped_plot_folder,
-        "ch" + str(ch) + "_" + "pt" + str(pt) + "_raw_no-pedestal.pdf",
+        filename_raw_noped_data_plot,
     )
     plt.savefig(raw_noped_data_plot)
 
@@ -128,9 +134,12 @@ for ch in channels:
         os.mkdir(raw_noped_data_folder)
 
     # Write raw data to file
+    filename_raw_noped_data_file = (
+        "ch" + str(ch) + "_" + "pt" + str(pt) + "_raw_no-pedestal.dat"
+    )
     raw_noped_data_file = os.path.join(
         raw_noped_data_folder,
-        "ch" + str(ch) + "_" + "pt" + str(pt) + "_raw_no-pedestal.dat",
+        filename_raw_noped_data_file,
     )
     with open(
         raw_noped_data_file,
@@ -140,5 +149,5 @@ for ch in channels:
             fp.write(str(item) + "\n")
 
     print("*Saved ch. " + str(ch) + "*")
-    print("plot: " + str(raw_noped_data_plot))
-    print("data: " + str(raw_noped_data_file) + "\n")
+    print("plot: " + str(filename_raw_noped_data_plot))
+    print("data: " + str(filename_raw_noped_data_file) + "\n")
