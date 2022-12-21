@@ -9,18 +9,22 @@ from distinctipy import distinctipy
 from read_events import *
 from read_pedestals import *
 from read_transfer_function import *
+from calculate_xray_gain import *
 
 # *** X-RAY DATA, PEDESTAL AND TRANSFER FUNCTION DATA ***
-filepath_xray_data = "xray_data\IT_400_xray_205_FTh_3mins_tau4.txt"
-filepath_pedestal_data = "input\pedestal_data\L4R0M0_Pedestals.dat"
-filepath_fdt_data = "input\transfer_function_data\L4R0M0_TransferFunction.dat"
+filepath_xray_data = r"input\xray_data\IT_400_xray_205_FTh_3mins_tau4.txt"
+filepath_pedestal_data = r"input\pedestal_data\L4R0M0_Pedestals.dat"
+filepath_fdt_data = r"input\transfer_function_data\L4R0M0_TransferFunction.dat"
 folder_name = "IT_400_xray_205_FTh_3mins_tau4"
 
 # *** CONFIGURATION ***
 ch_min = 0
-ch_max = 31
+ch_max = 1
 ASIC_number = 0
 pt = 4
+
+# Maximum DAC_inj value for linear gain calculation in x-ray region
+max_dac_inj_gain = 100
 
 channels = range(ch_min, ch_max + 1)
 output_folder_path = os.path.join("output", folder_name)
@@ -84,8 +88,10 @@ with open(
     pedestal_data_file,
     "w",
 ) as fp:
+    count = 0
     for item in all_pedestals:
-        fp.write(str(item) + "\n")
+        fp.write(str(count) + "\t" + str(item) + "\n")
+        count = count + 1
 
 print("\n** Pedestals **")
 print("Saved: " + filename_ped)
@@ -177,7 +183,7 @@ raw_plot_folder = os.path.join(raw_main_folder, "plots")
 if not os.path.exists(raw_plot_folder):
     os.mkdir(raw_plot_folder)
 
-print("\n**Saving raw data plots**\n")
+print("\n**Saving raw data plots**")
 for ch in channels:
     plt.clf()
     binwidth = 1
@@ -232,7 +238,7 @@ raw_noped_plot_folder = os.path.join(raw_noped_main_folder, "plots")
 if not os.path.exists(raw_noped_plot_folder):
     os.mkdir(raw_noped_plot_folder)
 
-print("\n**Saving raw data plots without pedestal**\n")
+print("\n**Saving raw data plots without pedestal**")
 for ch in channels:
     plt.clf()
     binwidth = 1
@@ -288,3 +294,30 @@ for ch in channels:
     print("*Saved ch. " + str(ch) + "*")
     print("plot: " + str(filename_raw_noped_data_plot))
     print("data: " + str(filename_raw_noped_data_file) + "\n")
+
+# Calculate gain from interpolation for all selected channels
+gain_folder = os.path.join(output_folder_path, "gain_x-ray_region")
+
+if not os.path.exists(gain_folder):
+    os.mkdir(gain_folder)
+
+gain_data_file_name = (
+    "allchs_pt" + str(pt) + "_low_energy_gain_" + str(max_dac_inj_gain) + ".dat"
+)
+gain_data_file = os.path.join(
+    gain_folder,
+    gain_data_file_name,
+)
+
+gain_file = open(gain_data_file, "w")
+gain_file.write("")
+
+gain_file = open(gain_data_file, "a")
+for ch in channels:
+    gain, pedestal = get_linear_gain(filepath_fdt_data, ch, pt, max_dac_inj_gain)
+    gain_file.write(str(ch) + "\t" + str(gain) + "\t" + str(pedestal) + "\n")
+
+print("** Calculated linear gain for all channels in x-ray region")
+print("Saved: " + gain_data_file_name)
+
+# ADU -> keV conversion and plot
