@@ -16,6 +16,8 @@ def get_linear_gain(filepath, ch, pt, max_dacinj):
     max_index = max_index[0][0]
     popt, pcov = curve_fit(linear_model, out[0:max_index], cal_v[0:max_index])
 
+    # TODO PLOT interpolazione e valutare max range
+
     gain = popt[0]
     pedestal = abs(popt[1])
 

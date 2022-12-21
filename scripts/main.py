@@ -22,12 +22,13 @@ folder_name = "xray_205_400_FTh_2mins"
 
 # *** CONFIGURATION ***
 ch_min = 0
-ch_max = 31
+ch_max = 3
 ASIC_number = 0
 pt = 5
+cadmium_peak = 88.0  # keV
 
 # Maximum DAC_inj value for linear gain calculation in x-ray region
-max_dac_inj_gain = 100
+max_dac_inj_gain = 400
 
 channels = range(ch_min, ch_max + 1)
 output_folder_path = os.path.join("output", folder_name)
@@ -358,6 +359,42 @@ plt.title(
 )
 gain_trend_filename = "gain_chs_trend_" + str(max_dac_inj_gain) + ".pdf"
 plt.savefig(os.path.join(gain_folder, gain_trend_filename))
+
+
+# Plot 88 ADU -> keV dispersion over all channels
+plt.clf()
+cadmium_peak_val = np.zeros(shape=(len(channels), 1))
+cadmium_peak_error = np.zeros(shape=(len(channels), 1))
+for i in channels:
+    cadmium_peak_val[i] = cadmium_peak * gains_lin[i]
+    cadmium_peak_error[i] = 88.0 - cadmium_peak_val[i]
+
+print(cadmium_peak_val)
+print(cadmium_peak_error)
+
+binwidth = 0.1
+(n, bins, patches) = plt.hist(cadmium_peak_error)
+
+# Gaussian fit of data
+(mu, sigma) = norm.fit(cadmium_peak_error)
+
+matplotlib.pyplot.text(
+    0.1,
+    max(n),
+    "$\mu$ = "
+    + str(round(mu, 2))
+    + " keV\n $\sigma$ = "
+    + str(round(sigma, 2))
+    + " keV",
+    fontsize=12,
+    verticalalignment="top",
+)
+
+plt.xlabel("Error [keV]")
+plt.ylabel("Occurences")
+plt.title("\\textbf{88 keV peak dispersion}")
+peak_dispersion_filename = "88keV_peak_dispersion.pdf"
+plt.savefig(os.path.join(gain_folder, peak_dispersion_filename))
 
 
 # Plot histogram of pedestals obtained from linear interpolation
