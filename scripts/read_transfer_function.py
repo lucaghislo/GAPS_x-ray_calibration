@@ -16,4 +16,7 @@ def get_fdt(fdt_data, ch, pt):
     cal_v = fdt_subset["CAL_V"]
     out = fdt_subset["mean"]
 
+    cal_v = cal_v.to_numpy()
+    out = out.to_numpy()
+
     return cal_v, out
