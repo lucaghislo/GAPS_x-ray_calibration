@@ -319,14 +319,72 @@ gain_data_file = os.path.join(
 
 gain_file = open(gain_data_file, "w")
 gain_file.write("")
-
 gain_file = open(gain_data_file, "a")
+
+gains_lin = np.zeros(shape=(len(channels), 1))
+pedestals_lin = np.zeros(shape=(len(channels), 1))
+count = 0
 for ch in channels:
     gain, pedestal = get_linear_gain(filepath_fdt_data, ch, pt, max_dac_inj_gain)
     gain_file.write(str(ch) + "\t" + str(gain) + "\t" + str(pedestal) + "\n")
+    gains_lin[count] = gain
+    pedestals_lin[count] = pedestal
+    count = count + 1
+
+# Plot gain per channel
+plt.clf()
+plt.plot(channels, gains_lin, marker="o", linestyle="None")
+plt.xlabel("Channel")
+plt.ylabel("Gain [keV/ADU]")
+plt.xticks(np.arange(min(channels), max(channels) + 1, step=1))
+plt.title(
+    "Linear gain up to " + str(max_dac_inj_gain) + " DAC_inj_code", fontweight="bold"
+)
+gain_trend_filename = "gain_chs_trend_" + str(max_dac_inj_gain) + ".pdf"
+plt.savefig(os.path.join(gain_folder, gain_trend_filename))
+
+
+# Plot histogram of pedestals obtained from linear interpolation
+# Plot histogram of pedestal data per module
+plt.clf()
+binwidth = 15
+all_pedestals = pedestals_lin
+(n, bins, patches) = plt.hist(
+    pedestals_lin,
+    bins=range(
+        int(min(all_pedestals)),
+        int(max(all_pedestals)) + binwidth,
+        binwidth,
+    ),
+    color="dodgerblue",
+)
+plt.xlim(xmin=0, xmax=300)
+plt.xlabel("Channel Output [ADU]")
+plt.ylabel("Occurrences")
+plt.title("Estimated pedestals for all channels", fontweight="bold")
+
+# Gaussian fit of data
+(mu, sigma) = norm.fit(all_pedestals)
+
+matplotlib.pyplot.text(
+    10,
+    max(n),
+    "$\mu$ = "
+    + str(round(mu, 2))
+    + " ADU\n $\sigma$ = "
+    + str(round(sigma, 2))
+    + " ADU",
+    fontsize=12,
+    verticalalignment="top",
+)
+
+filename_ped = "allchs_estimated_pedestal_distribution.pdf"
+plt.savefig(os.path.join(gain_folder, filename_ped))
 
 print("** Calculated linear gain for all channels in x-ray region **")
 print("Saved: " + gain_data_file_name)
+print("Saved: " + gain_trend_filename)
+print("Saved: " + filename_ped)
 
 
 # ADU -> keV conversion and plot
