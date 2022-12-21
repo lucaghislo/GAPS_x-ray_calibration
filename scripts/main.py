@@ -29,6 +29,12 @@ max_dac_inj_gain = 100
 channels = range(ch_min, ch_max + 1)
 output_folder_path = os.path.join("output", folder_name)
 
+# Plot configuration
+plt.rcParams.update({"text.usetex": True, "font.family": "serif"})
+matplotlib.rcParams["axes.linewidth"] = 0.7
+matplotlib.rcParams["xtick.major.width"] = 0.7
+matplotlib.rcParams["ytick.major.width"] = 0.7
+
 if not os.path.exists(output_folder_path):
     os.mkdir(output_folder_path)
 
@@ -61,7 +67,7 @@ all_pedestals = all_pedestals["mean"]
 plt.xlim(xmin=0, xmax=300)
 plt.xlabel("Channel Output [ADU]")
 plt.ylabel("Occurrences")
-plt.title("Pedestal distribution for all channels", fontweight="bold")
+plt.title("\\textbf{Pedestal distribution for all channels}")
 
 # Gaussian fit of data
 (mu, sigma) = norm.fit(all_pedestals)
@@ -139,7 +145,9 @@ for ch in channels:
     plt.ylabel("Channel Output [ADU]")
     plt.xlim(xmin=0, xmax=max(cal_v_kev))
     plt.ylim(ymin=0)
-    plt.title("Transfer function for channel " + str(ch), fontweight="bold")
+    plt.title(
+        "\\textbf{Transfer function for channel " + str(ch) + "}", fontweight="bold"
+    )
     filename_fdt_single = "fdt_ch" + str(ch) + "_pt" + str(pt) + ".pdf"
     plt.savefig(os.path.join(plot_single_fdt_folder, filename_fdt_single))
 
@@ -163,7 +171,7 @@ plt.xlabel("Incoming Energy [keV]")
 plt.ylabel("Channel Output [ADU]")
 plt.xlim(xmin=0, xmax=max(cal_v_kev))
 plt.ylim(ymin=0)
-plt.title("Transfer function for all channels", fontweight="bold")
+plt.title("\\textbf{Transfer function for all channels}", fontweight="bold")
 
 filename_fdt = "allchs_pt" + str(pt) + "_transfer_functions.pdf"
 plt.savefig(os.path.join(fdt_folder, filename_fdt))
@@ -204,7 +212,7 @@ for ch in channels:
     plt.xlabel("Energy [ADU]")
     plt.ylabel("Occurences")
     plt.title(
-        "Raw data for channel " + str(ch) + " at tau " + str(pt),
+        "\\textbf{Raw data for channel " + str(ch) + " at tau " + str(pt) + "}",
         fontweight="bold",
     )
 
@@ -265,7 +273,11 @@ for ch in channels:
     plt.xlabel("Energy [ADU]")
     plt.ylabel("Occurences")
     plt.title(
-        "Raw data for channel " + str(ch) + " at tau " + str(pt) + " without pedestal",
+        "\\textbf{Raw data for channel "
+        + str(ch)
+        + " at tau "
+        + str(pt)
+        + " without pedestal}",
         fontweight="bold",
     )
 
@@ -333,19 +345,19 @@ for ch in channels:
 
 # Plot gain per channel
 plt.clf()
-plt.plot(channels, gains_lin, marker="o", linestyle="None")
+plt.plot(channels, gains_lin, marker="o")
 plt.xlabel("Channel")
 plt.ylabel("Gain [keV/ADU]")
-plt.xticks(np.arange(min(channels), max(channels) + 1, step=1))
+plt.xticks(np.arange(min(channels), max(channels) + 1, step=5))
 plt.title(
-    "Linear gain up to " + str(max_dac_inj_gain) + " DAC_inj_code", fontweight="bold"
+    "\\textbf{Linear gain up to " + str(max_dac_inj_gain) + " DAC_inj_code}",
+    fontweight="bold",
 )
 gain_trend_filename = "gain_chs_trend_" + str(max_dac_inj_gain) + ".pdf"
 plt.savefig(os.path.join(gain_folder, gain_trend_filename))
 
 
 # Plot histogram of pedestals obtained from linear interpolation
-# Plot histogram of pedestal data per module
 plt.clf()
 binwidth = 15
 all_pedestals = pedestals_lin
@@ -361,7 +373,7 @@ all_pedestals = pedestals_lin
 plt.xlim(xmin=0, xmax=300)
 plt.xlabel("Channel Output [ADU]")
 plt.ylabel("Occurrences")
-plt.title("Estimated pedestals for all channels", fontweight="bold")
+plt.title("\\textbf{Estimated pedestals for all channels}", fontweight="bold")
 
 # Gaussian fit of data
 (mu, sigma) = norm.fit(all_pedestals)
@@ -424,11 +436,11 @@ for ch in channels:
     plt.xlabel("Energy [keV]")
     plt.ylabel("Occurences")
     plt.title(
-        "Converted data for channel "
+        "\\textbf{Converted data for channel "
         + str(ch)
         + " at tau "
         + str(pt)
-        + " without pedestal",
+        + " without pedestal}",
         fontweight="bold",
     )
 
