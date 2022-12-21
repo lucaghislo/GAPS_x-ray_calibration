@@ -1,17 +1,22 @@
 import os.path
 import pandas as pd
 import numpy as np
+import matplotlib
 import matplotlib.pyplot as plt
+from scipy.stats import norm
+from distinctipy import distinctipy
 
 from read_events import *
 from read_pedestals import *
+from read_transfer_function import *
 
-# Filepaths for x-ray and pedestal
+# *** X-RAY DATA, PEDESTAL AND TRANSFER FUNCTION DATA ***
 filepath_xray_data = "xray_data\IT_400_xray_205_FTh_3mins_tau4.txt"
 filepath_pedestal_data = "pedestal_data\L4R0M0_Pedestals.dat"
+filepath_fdt_data = "transfer_function_data\L4R0M0_TransferFunction.dat"
 folder_name = "IT_400_xray_205_FTh_3mins_tau4"
 
-# Configuration data
+# *** CONFIGURATION ***
 ch_min = 0
 ch_max = 31
 ASIC_number = 0
@@ -24,10 +29,89 @@ if not os.path.exists(output_folder_path):
     os.mkdir(output_folder_path)
 
 # Events per channel organised in columns
+print("** Reading events from file **")
 events = read_events(filepath_xray_data, ASIC_number)
 
 # Pedestal data
 pedestals = read_pedestals(filepath_pedestal_data)
+
+# Plot histogram of pedestal data per module
+pedestal_folder = os.path.join(output_folder_path, "pedestal")
+
+if not os.path.exists(pedestal_folder):
+    os.mkdir(pedestal_folder)
+
+plt.clf()
+binwidth = 15
+all_pedestals = pedestals[pedestals["pt"] == pt]
+all_pedestals = all_pedestals["mean"]
+(n, bins, patches) = plt.hist(
+    all_pedestals,
+    bins=range(
+        int(min(all_pedestals)),
+        int(max(all_pedestals)) + binwidth,
+        binwidth,
+    ),
+    color="green",
+)
+plt.xlim(xmin=0, xmax=300)
+plt.xlabel("Channel Output [ADU]")
+plt.ylabel("Occurrences")
+plt.title("Pedestal distribution for all channels", fontweight="bold")
+
+# Gaussian fit of data
+(mu, sigma) = norm.fit(all_pedestals)
+
+matplotlib.pyplot.text(
+    10,
+    max(n),
+    "$\mu$ = "
+    + str(round(mu, 2))
+    + " ADU\n $\sigma$ = "
+    + str(round(sigma, 2))
+    + " ADU",
+    fontsize=12,
+    verticalalignment="top",
+)
+
+filename_ped = "allchs_pedestal_distribution.pdf"
+plt.savefig(os.path.join(pedestal_folder, filename_ped))
+
+print("\n** Pedestals **")
+print("Saved: " + filename_ped)
+
+# Transfer function data
+fdt_data = read_transfer_function(filepath_fdt_data)
+
+# Plot all transfer functions
+fdt_folder = os.path.join(output_folder_path, "transfer_function")
+
+if not os.path.exists(fdt_folder):
+    os.mkdir(fdt_folder)
+
+cal_v, out = get_fdt(fdt_data, 0, 0)
+cal_v_kev = [cal_i * 0.841 for cal_i in cal_v]
+
+colors = distinctipy.get_colors(len(channels))
+
+plt.clf()
+count = 0
+for ch in channels:
+    cal_v, out = get_fdt(fdt_data, ch, pt)
+    plt.plot(cal_v_kev, out, colors[count])
+    count = count + 1
+
+plt.xlabel("Incoming Energy [keV]")
+plt.ylabel("Channel Output [ADU]")
+plt.xlim(xmin=0, xmax=max(cal_v_kev))
+plt.ylim(ymin=0)
+plt.title("Transfer function for all channels", fontweight="bold")
+
+filename_fdt = "allchs_transfer_functions.pdf"
+plt.savefig(os.path.join(fdt_folder, filename_fdt))
+
+print("\n** Transfer functions **")
+print("Saved: " + filename_fdt)
 
 # Raw data histogram per channel
 raw_main_folder = os.path.join(output_folder_path, "raw_data")
@@ -40,7 +124,7 @@ raw_plot_folder = os.path.join(raw_main_folder, "plots")
 if not os.path.exists(raw_plot_folder):
     os.mkdir(raw_plot_folder)
 
-print("\n***Saving raw data plots***\n")
+print("\n**Saving raw data plots**\n")
 for ch in channels:
     plt.clf()
     binwidth = 1
@@ -95,7 +179,7 @@ raw_noped_plot_folder = os.path.join(raw_noped_main_folder, "plots")
 if not os.path.exists(raw_noped_plot_folder):
     os.mkdir(raw_noped_plot_folder)
 
-print("\n***Saving raw data plots without pedestal***\n")
+print("\n**Saving raw data plots without pedestal**\n")
 for ch in channels:
     plt.clf()
     binwidth = 1
