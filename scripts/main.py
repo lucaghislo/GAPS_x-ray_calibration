@@ -17,11 +17,14 @@ filepath_pedestal_data = r"input\pedestal_data\L4R0M0_Pedestals.dat"
 filepath_fdt_data = r"input\transfer_function_data\L4R0M0_TransferFunction.dat"
 folder_name = "IT_400_xray_205_FTh_3mins_tau4"
 
+filepath_xray_data = r"input\xray_data\xray_205_400_FTh_2mins.txt"
+folder_name = "xray_205_400_FTh_2mins"
+
 # *** CONFIGURATION ***
 ch_min = 0
 ch_max = 31
 ASIC_number = 0
-pt = 4
+pt = 5
 
 # Maximum DAC_inj value for linear gain calculation in x-ray region
 max_dac_inj_gain = 100
