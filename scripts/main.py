@@ -19,7 +19,7 @@ folder_name = "IT_400_xray_205_FTh_3mins_tau4"
 
 # *** CONFIGURATION ***
 ch_min = 0
-ch_max = 1
+ch_max = 31
 ASIC_number = 0
 pt = 4
 
@@ -97,6 +97,7 @@ print("\n** Pedestals **")
 print("Saved: " + filename_ped)
 print("Saved: " + filename_ped_data)
 
+
 # Transfer function data
 fdt_data = read_transfer_function(filepath_fdt_data)
 
@@ -172,6 +173,7 @@ print("Saved: " + filename_fdt)
 print("Saved: single channel fdt data in \\single\\data")
 print("Saved: single channel fdt plot in \\single\\plots")
 
+
 # Raw data histogram per channel
 raw_main_folder = os.path.join(output_folder_path, "raw_data")
 
@@ -183,7 +185,7 @@ raw_plot_folder = os.path.join(raw_main_folder, "plots")
 if not os.path.exists(raw_plot_folder):
     os.mkdir(raw_plot_folder)
 
-print("\n**Saving raw data plots**")
+print("\n** Saving raw data plots **")
 for ch in channels:
     plt.clf()
     binwidth = 1
@@ -199,6 +201,8 @@ for ch in channels:
     )
     plt.xlim(xmin=0, xmax=300)
     plt.yscale("log")
+    plt.xlabel("Energy [ADU]")
+    plt.ylabel("Occurences")
     plt.title(
         "Raw data for channel " + str(ch) + " at tau " + str(pt),
         fontweight="bold",
@@ -223,9 +227,10 @@ for ch in channels:
         for item in events_data:
             fp.write(str(item) + "\n")
 
-    print("*Saved ch. " + str(ch) + "*")
+    print("* Saved ch. " + str(ch) + " *")
     print("plot: " + str(filename_raw_data_plot))
     print("data: " + str(filename_raw_data_file) + "\n")
+
 
 # Raw data histogram per channel with pedestal subtracted
 raw_noped_main_folder = os.path.join(output_folder_path, "raw_no-pedestal_data")
@@ -238,7 +243,7 @@ raw_noped_plot_folder = os.path.join(raw_noped_main_folder, "plots")
 if not os.path.exists(raw_noped_plot_folder):
     os.mkdir(raw_noped_plot_folder)
 
-print("\n**Saving raw data plots without pedestal**")
+print("** Saving raw data plots without pedestal **")
 for ch in channels:
     plt.clf()
     binwidth = 1
@@ -257,6 +262,8 @@ for ch in channels:
     )
     plt.xlim(xmin=0, xmax=300)
     plt.yscale("log")
+    plt.xlabel("Energy [ADU]")
+    plt.ylabel("Occurences")
     plt.title(
         "Raw data for channel " + str(ch) + " at tau " + str(pt) + " without pedestal",
         fontweight="bold",
@@ -291,9 +298,10 @@ for ch in channels:
         for item in events_data:
             fp.write(str(item) + "\n")
 
-    print("*Saved ch. " + str(ch) + "*")
+    print("* Saved ch. " + str(ch) + " *")
     print("plot: " + str(filename_raw_noped_data_plot))
     print("data: " + str(filename_raw_noped_data_file) + "\n")
+
 
 # Calculate gain from interpolation for all selected channels
 gain_folder = os.path.join(output_folder_path, "gain_x-ray_region")
@@ -317,7 +325,84 @@ for ch in channels:
     gain, pedestal = get_linear_gain(filepath_fdt_data, ch, pt, max_dac_inj_gain)
     gain_file.write(str(ch) + "\t" + str(gain) + "\t" + str(pedestal) + "\n")
 
-print("** Calculated linear gain for all channels in x-ray region")
+print("** Calculated linear gain for all channels in x-ray region **")
 print("Saved: " + gain_data_file_name)
 
+
 # ADU -> keV conversion and plot
+converted_noped_main_folder = os.path.join(
+    output_folder_path, "converted_no-pedestal_data"
+)
+
+if not os.path.exists(converted_noped_main_folder):
+    os.mkdir(converted_noped_main_folder)
+
+converted_noped_plot_folder = os.path.join(converted_noped_main_folder, "plots")
+
+if not os.path.exists(converted_noped_plot_folder):
+    os.mkdir(converted_noped_plot_folder)
+
+print("\n** Saving converted data plots without pedestal **")
+for ch in channels:
+    plt.clf()
+    binwidth = 1
+    events_data = get_events(events, ch)
+    events_data_removed = [
+        dat_i - get_pedestal(pedestals, ch, pt) for dat_i in events_data
+    ]
+    gain, pedestal = get_linear_gain(filepath_fdt_data, ch, pt, max_dac_inj_gain)
+    events_data_removed_kev = [dat_i * gain for dat_i in events_data_removed]
+    (n, bins, patches) = plt.hist(
+        events_data_removed,
+        bins=range(
+            int(min(events_data_removed_kev)),
+            int(max(events_data_removed_kev)) + binwidth,
+            binwidth,
+        ),
+        color="purple",
+    )
+    plt.xlim(xmin=0, xmax=300)
+    plt.yscale("log")
+    plt.xlabel("Energy [keV]")
+    plt.ylabel("Occurences")
+    plt.title(
+        "Converted data for channel "
+        + str(ch)
+        + " at tau "
+        + str(pt)
+        + " without pedestal",
+        fontweight="bold",
+    )
+
+    filename_converted_noped_data_plot = (
+        "ch" + str(ch) + "_" + "pt" + str(pt) + "_keV_no-pedestal.pdf"
+    )
+    converted_noped_data_plot = os.path.join(
+        converted_noped_plot_folder,
+        filename_converted_noped_data_plot,
+    )
+    plt.savefig(converted_noped_data_plot)
+
+    converted_noped_data_folder = os.path.join(converted_noped_main_folder, "data")
+
+    if not os.path.exists(converted_noped_data_folder):
+        os.mkdir(converted_noped_data_folder)
+
+    # Write converted data to file
+    filename_converted_noped_data_file = (
+        "ch" + str(ch) + "_" + "pt" + str(pt) + "_kev_no-pedestal.dat"
+    )
+    converted_noped_data_file = os.path.join(
+        converted_noped_data_folder,
+        filename_converted_noped_data_file,
+    )
+    with open(
+        converted_noped_data_file,
+        "w",
+    ) as fp:
+        for item in events_data:
+            fp.write(str(item) + "\n")
+
+    print("* Saved ch. " + str(ch) + " *")
+    print("plot: " + str(filename_converted_noped_data_plot))
+    print("data: " + str(filename_converted_noped_data_file) + "\n")
