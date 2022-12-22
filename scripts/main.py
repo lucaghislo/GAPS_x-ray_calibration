@@ -22,13 +22,13 @@ folder_name = "xray_205_400_FTh_2mins"
 
 # *** CONFIGURATION ***
 ch_min = 0
-ch_max = 3
+ch_max = 31
 ASIC_number = 0
 pt = 5
 cadmium_peak = 88.0  # keV
 
 # Maximum DAC_inj value for linear gain calculation in x-ray region
-max_dac_inj_gain = 400
+max_dac_inj_gain = 300
 
 channels = range(ch_min, ch_max + 1)
 output_folder_path = os.path.join("output", folder_name)
@@ -38,6 +38,9 @@ plt.rcParams.update({"text.usetex": True, "font.family": "serif"})
 matplotlib.rcParams["axes.linewidth"] = 0.7
 matplotlib.rcParams["xtick.major.width"] = 0.7
 matplotlib.rcParams["ytick.major.width"] = 0.7
+matplotlib.rcParams["xtick.direction"] = "in"
+matplotlib.rcParams["ytick.direction"] = "in"
+
 
 if not os.path.exists(output_folder_path):
     os.mkdir(output_folder_path)
@@ -102,6 +105,8 @@ with open(
     for item in all_pedestals:
         fp.write(str(count) + "\t" + str(item) + "\n")
         count = count + 1
+
+fp.close()
 
 print("\n** Pedestals **")
 print("Saved: " + filename_ped)
@@ -171,6 +176,8 @@ for ch in channels:
         for i in range(0, len(cal_v)):
             fp.write(str(cal_v[i]) + "\t" + str(out[i]) + "\n")
 
+    fp.close()
+
 plt.xlabel("Incoming Energy [keV]")
 plt.ylabel("Channel Output [ADU]")
 plt.xlim(xmin=0, xmax=max(cal_v_kev))
@@ -238,6 +245,8 @@ for ch in channels:
     ) as fp:
         for item in events_data:
             fp.write(str(item) + "\n")
+
+    fp.close()
 
     print("* Saved ch. " + str(ch) + " *")
     print("plot: " + str(filename_raw_data_plot))
@@ -314,6 +323,8 @@ for ch in channels:
         for item in events_data:
             fp.write(str(item) + "\n")
 
+    fp.close()
+
     print("* Saved ch. " + str(ch) + " *")
     print("plot: " + str(filename_raw_noped_data_plot))
     print("data: " + str(filename_raw_noped_data_file) + "\n")
@@ -335,17 +346,35 @@ gain_data_file = os.path.join(
 
 gain_file = open(gain_data_file, "w")
 gain_file.write("")
+gain_file.close()
 gain_file = open(gain_data_file, "a")
 
+interpolation_folder = os.path.join(gain_folder, "ch_interpolation")
+
+if not os.path.exists(interpolation_folder):
+    os.mkdir(interpolation_folder)
+
+print("** Calculating linear gain for all channels in x-ray region **")
 gains_lin = np.zeros(shape=(len(channels), 1))
 pedestals_lin = np.zeros(shape=(len(channels), 1))
 count = 0
 for ch in channels:
-    gain, pedestal = get_linear_gain(filepath_fdt_data, ch, pt, max_dac_inj_gain)
+    inter_filename = (
+        "ch" + str(ch) + "_pt" + str(pt) + "_interp_" + str(max_dac_inj_gain) + ".pdf"
+    )
+    inter_filepath = os.path.join(interpolation_folder, inter_filename)
+
+    print("* Saved ch. " + str(ch) + " *")
+
+    gain, pedestal = get_linear_gain(
+        filepath_fdt_data, ch, pt, max_dac_inj_gain, inter_filepath
+    )
     gain_file.write(str(ch) + "\t" + str(gain) + "\t" + str(pedestal) + "\n")
     gains_lin[count] = gain
     pedestals_lin[count] = pedestal
     count = count + 1
+
+gain_file.close()
 
 # Plot gain per channel
 plt.clf()
@@ -368,9 +397,6 @@ cadmium_peak_error = np.zeros(shape=(len(channels), 1))
 for i in channels:
     cadmium_peak_val[i] = cadmium_peak * gains_lin[i]
     cadmium_peak_error[i] = 88.0 - cadmium_peak_val[i]
-
-print(cadmium_peak_val)
-print(cadmium_peak_error)
 
 binwidth = 0.1
 (n, bins, patches) = plt.hist(cadmium_peak_error)
@@ -433,7 +459,6 @@ matplotlib.pyplot.text(
 filename_ped = "allchs_estimated_pedestal_distribution.pdf"
 plt.savefig(os.path.join(gain_folder, filename_ped))
 
-print("** Calculated linear gain for all channels in x-ray region **")
 print("Saved: " + gain_data_file_name)
 print("Saved: " + gain_trend_filename)
 print("Saved: " + filename_ped)
@@ -512,6 +537,8 @@ for ch in channels:
     ) as fp:
         for item in events_data:
             fp.write(str(item) + "\n")
+
+    fp.close()
 
     print("* Saved ch. " + str(ch) + " *")
     print("plot: " + str(filename_converted_noped_data_plot))
