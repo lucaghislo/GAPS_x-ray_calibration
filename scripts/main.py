@@ -478,6 +478,7 @@ if not os.path.exists(converted_noped_plot_folder):
     os.mkdir(converted_noped_plot_folder)
 
 print("\n** Saving converted data plots without pedestal **")
+plt.clf()
 for ch in channels:
     plt.clf()
     binwidth = 1

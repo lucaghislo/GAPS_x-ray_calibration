@@ -27,33 +27,35 @@ def get_linear_gain(filepath, ch, pt, max_dacinj, outpath=""):
     gain = popt[0]
     pedestal = abs(popt[1])
 
-    # Plot of interpolation goodness
-    plt.clf()
-    out_selected_show = out[1 : max_index + 7]
-    cal_v_kev_selected_show = cal_v_kev[1 : max_index + 7]
-    plt.plot(out_selected_show, cal_v_kev_selected_show, marker="o", linestyle="None")
-    plt.plot(out_selected, linear_model(out_selected, *popt))
-    plt.xlabel("Channel Output [ADU]")
-    plt.ylabel("Incoming Energy [keV]")
-    plt.title("\\textbf{X-ray region linear interpolation}")
-
-    matplotlib.pyplot.text(
-        200,
-        700,
-        "Estimated linear model\n"
-        + str(cal_v_kev_selected[0])
-        + " keV - "
-        + str(cal_v_kev_selected[len(cal_v_kev_selected) - 1])
-        + " keV\n$y="
-        + str(np.round(gain, 3))
-        + " \cdot x + "
-        + str(np.round(pedestal, 2))
-        + "$",
-        fontsize=12,
-        verticalalignment="top",
-    )
-
     if outpath != "":
+        # Plot of interpolation goodness
+        plt.clf()
+        out_selected_show = out[1 : max_index + 7]
+        cal_v_kev_selected_show = cal_v_kev[1 : max_index + 7]
+        plt.plot(
+            out_selected_show, cal_v_kev_selected_show, marker="o", linestyle="None"
+        )
+        plt.plot(out_selected, linear_model(out_selected, *popt))
+        plt.xlabel("Channel Output [ADU]")
+        plt.ylabel("Incoming Energy [keV]")
+        plt.title("\\textbf{X-ray region linear interpolation}")
+
+        matplotlib.pyplot.text(
+            200,
+            700,
+            "Estimated linear model\n"
+            + str(cal_v_kev_selected[0])
+            + " keV - "
+            + str(cal_v_kev_selected[len(cal_v_kev_selected) - 1])
+            + " keV\n$y="
+            + str(np.round(gain, 3))
+            + " \cdot x + "
+            + str(np.round(pedestal, 2))
+            + "$",
+            fontsize=12,
+            verticalalignment="top",
+        )
+
         plt.savefig(outpath)
 
     return gain, pedestal
