@@ -28,7 +28,8 @@ pt = 5
 cadmium_peak = 88.0  # keV
 
 # Maximum DAC_inj value for linear gain calculation in x-ray region
-max_dac_inj_gain = 100
+max_dac_inj_gain_linear = 200
+max_dac_inj_gain_power4 = 500
 
 channels = range(ch_min, ch_max + 1)
 output_folder_path = os.path.join("output", folder_name)
@@ -329,18 +330,24 @@ for ch in channels:
     print("plot: " + str(filename_raw_noped_data_plot))
     print("data: " + str(filename_raw_noped_data_file) + "\n")
 
+# LINEAR
+# Calculate linear gain from interpolation for all selected channels
 
-# Calculate gain from interpolation for all selected channels
 gain_folder = os.path.join(output_folder_path, "gain_x-ray_region")
 
 if not os.path.exists(gain_folder):
     os.mkdir(gain_folder)
 
+gain_folder_linear = os.path.join(gain_folder, "linear")
+
+if not os.path.exists(gain_folder_linear):
+    os.mkdir(gain_folder_linear)
+
 gain_data_file_name = (
-    "allchs_pt" + str(pt) + "_low_energy_gain_" + str(max_dac_inj_gain) + ".dat"
+    "allchs_pt" + str(pt) + "_low_energy_gain_" + str(max_dac_inj_gain_linear) + ".dat"
 )
 gain_data_file = os.path.join(
-    gain_folder,
+    gain_folder_linear,
     gain_data_file_name,
 )
 
@@ -349,7 +356,7 @@ gain_file.write("")
 gain_file.close()
 gain_file = open(gain_data_file, "a")
 
-interpolation_folder = os.path.join(gain_folder, "ch_interpolation")
+interpolation_folder = os.path.join(gain_folder_linear, "ch_interpolation")
 
 if not os.path.exists(interpolation_folder):
     os.mkdir(interpolation_folder)
@@ -360,14 +367,20 @@ pedestals_lin = np.zeros(shape=(len(channels), 1))
 count = 0
 for ch in channels:
     inter_filename = (
-        "ch" + str(ch) + "_pt" + str(pt) + "_interp_" + str(max_dac_inj_gain) + ".pdf"
+        "ch"
+        + str(ch)
+        + "_pt"
+        + str(pt)
+        + "_interp_"
+        + str(max_dac_inj_gain_linear)
+        + ".pdf"
     )
     inter_filepath = os.path.join(interpolation_folder, inter_filename)
 
     print("* Saved ch. " + str(ch) + " *")
 
     gain, pedestal = get_linear_gain(
-        filepath_fdt_data, ch, pt, max_dac_inj_gain, inter_filepath
+        filepath_fdt_data, ch, pt, max_dac_inj_gain_linear, inter_filepath
     )
     gain_file.write(str(ch) + "\t" + str(gain) + "\t" + str(pedestal) + "\n")
     gains_lin[count] = gain
@@ -383,11 +396,11 @@ plt.xlabel("Channel")
 plt.ylabel("Gain [keV/ADU]")
 plt.xticks(np.arange(min(channels), max(channels) + 1, step=5))
 plt.title(
-    "\\textbf{Linear gain up to " + str(max_dac_inj_gain) + " DAC_inj_code}",
+    "\\textbf{Linear gain up to " + str(max_dac_inj_gain_linear) + " DAC_inj_code}",
     fontweight="bold",
 )
-gain_trend_filename = "gain_chs_trend_" + str(max_dac_inj_gain) + ".pdf"
-plt.savefig(os.path.join(gain_folder, gain_trend_filename))
+gain_trend_filename = "gain_chs_trend_" + str(max_dac_inj_gain_linear) + ".pdf"
+plt.savefig(os.path.join(gain_folder_linear, gain_trend_filename))
 
 
 # Plot 88 ADU -> keV dispersion over all channels
@@ -420,7 +433,7 @@ plt.xlabel("Error [keV]")
 plt.ylabel("Occurences")
 plt.title("\\textbf{88 keV peak dispersion}")
 peak_dispersion_filename = "88keV_peak_dispersion.pdf"
-plt.savefig(os.path.join(gain_folder, peak_dispersion_filename))
+plt.savefig(os.path.join(gain_folder_linear, peak_dispersion_filename))
 
 
 # Plot histogram of pedestals obtained from linear interpolation
@@ -457,12 +470,157 @@ matplotlib.pyplot.text(
 )
 
 filename_ped = "allchs_estimated_pedestal_distribution.pdf"
-plt.savefig(os.path.join(gain_folder, filename_ped))
+plt.savefig(os.path.join(gain_folder_linear, filename_ped))
 
 print("Saved: " + gain_data_file_name)
 print("Saved: " + gain_trend_filename)
 print("Saved: " + filename_ped)
 
+
+# TODO Sistemare parametri stimati modello power 4 e textbox parametri modello
+# POWER 4
+# Calculate power 4 gain from interpolation for all selected channels
+gain_folder_power4 = os.path.join(gain_folder, "power_4")
+
+if not os.path.exists(gain_folder_power4):
+    os.mkdir(gain_folder_power4)
+
+gain_data_file_name = (
+    "allchs_pt" + str(pt) + "_low_energy_gain_" + str(max_dac_inj_gain_power4) + ".dat"
+)
+gain_data_file = os.path.join(
+    gain_folder_power4,
+    gain_data_file_name,
+)
+
+gain_file = open(gain_data_file, "w")
+gain_file.write("")
+gain_file.close()
+gain_file = open(gain_data_file, "a")
+
+interpolation_folder = os.path.join(gain_folder_power4, "ch_interpolation")
+
+if not os.path.exists(interpolation_folder):
+    os.mkdir(interpolation_folder)
+
+print("** Calculating power 4 gain for all channels in x-ray region **")
+gains_lin = np.zeros(shape=(len(channels), 1))
+pedestals_lin = np.zeros(shape=(len(channels), 1))
+count = 0
+for ch in channels:
+    inter_filename = (
+        "ch"
+        + str(ch)
+        + "_pt"
+        + str(pt)
+        + "_interp_"
+        + str(max_dac_inj_gain_power4)
+        + ".pdf"
+    )
+    inter_filepath = os.path.join(interpolation_folder, inter_filename)
+
+    print("* Saved ch. " + str(ch) + " *")
+
+    gain, pedestal = get_power4_gain(
+        filepath_fdt_data, ch, pt, max_dac_inj_gain_power4, inter_filepath
+    )
+    gain_file.write(str(ch) + "\t" + str(gain) + "\t" + str(pedestal) + "\n")
+    gains_lin[count] = gain
+    pedestals_lin[count] = pedestal
+    count = count + 1
+
+gain_file.close()
+
+# Plot gain per channel
+plt.clf()
+plt.plot(channels, gains_lin, marker="o")
+plt.xlabel("Channel")
+plt.ylabel("Gain [keV/ADU]")
+plt.xticks(np.arange(min(channels), max(channels) + 1, step=5))
+plt.title(
+    "\\textbf{Power 4 gain up to " + str(max_dac_inj_gain_power4) + " DAC_inj_code}",
+    fontweight="bold",
+)
+gain_trend_filename = "gain_chs_trend_" + str(max_dac_inj_gain_power4) + ".pdf"
+plt.savefig(os.path.join(gain_folder_power4, gain_trend_filename))
+
+
+# Plot 88 ADU -> keV dispersion over all channels
+plt.clf()
+cadmium_peak_val = np.zeros(shape=(len(channels), 1))
+cadmium_peak_error = np.zeros(shape=(len(channels), 1))
+for i in channels:
+    cadmium_peak_val[i] = cadmium_peak * gains_lin[i]
+    cadmium_peak_error[i] = 88.0 - cadmium_peak_val[i]
+
+binwidth = 0.1
+(n, bins, patches) = plt.hist(cadmium_peak_error)
+
+# Gaussian fit of data
+(mu, sigma) = norm.fit(cadmium_peak_error)
+
+matplotlib.pyplot.text(
+    0.1,
+    max(n),
+    "$\mu$ = "
+    + str(round(mu, 2))
+    + " keV\n $\sigma$ = "
+    + str(round(sigma, 2))
+    + " keV",
+    fontsize=12,
+    verticalalignment="top",
+)
+
+plt.xlabel("Error [keV]")
+plt.ylabel("Occurences")
+plt.title("\\textbf{88 keV peak dispersion}")
+peak_dispersion_filename = "88keV_peak_dispersion.pdf"
+plt.savefig(os.path.join(gain_folder_power4, peak_dispersion_filename))
+
+
+# Plot histogram of pedestals obtained from power 4 interpolation
+plt.clf()
+binwidth = 15
+all_pedestals = pedestals_lin
+(n, bins, patches) = plt.hist(
+    pedestals_lin,
+    bins=range(
+        int(min(all_pedestals)),
+        int(max(all_pedestals)) + binwidth,
+        binwidth,
+    ),
+    color="dodgerblue",
+)
+plt.xlim(xmin=0, xmax=300)
+plt.xlabel("Channel Output [ADU]")
+plt.ylabel("Occurrences")
+plt.title("\\textbf{Estimated pedestals for all channels}", fontweight="bold")
+
+# Gaussian fit of data
+(mu, sigma) = norm.fit(all_pedestals)
+
+matplotlib.pyplot.text(
+    10,
+    max(n),
+    "$\mu$ = "
+    + str(round(mu, 2))
+    + " ADU\n $\sigma$ = "
+    + str(round(sigma, 2))
+    + " ADU",
+    fontsize=12,
+    verticalalignment="top",
+)
+
+filename_ped = "allchs_estimated_pedestal_distribution.pdf"
+plt.savefig(os.path.join(gain_folder_power4, filename_ped))
+
+print("Saved: " + gain_data_file_name)
+print("Saved: " + gain_trend_filename)
+print("Saved: " + filename_ped)
+
+# TODO
+# Distinguere conversione con guadagno lineare e guadagno power 4
+# Distinguere il nome dei guadagni e creare cartelle separate
 
 # ADU -> keV conversion and plot
 converted_noped_main_folder = os.path.join(
@@ -486,7 +644,7 @@ for ch in channels:
     events_data_removed = [
         dat_i - get_pedestal(pedestals, ch, pt) for dat_i in events_data
     ]
-    gain, pedestal = get_linear_gain(filepath_fdt_data, ch, pt, max_dac_inj_gain)
+    gain, pedestal = get_linear_gain(filepath_fdt_data, ch, pt, max_dac_inj_gain_power4)
     events_data_removed_kev = [dat_i * gain for dat_i in events_data_removed]
     (n, bins, patches) = plt.hist(
         events_data_removed,
