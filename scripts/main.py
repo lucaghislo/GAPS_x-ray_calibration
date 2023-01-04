@@ -28,7 +28,7 @@ pt = 5
 cadmium_peak = 88.0  # keV
 
 # Maximum DAC_inj value for linear gain calculation in x-ray region
-max_dac_inj_gain = 300
+max_dac_inj_gain = 100
 
 channels = range(ch_min, ch_max + 1)
 output_folder_path = os.path.join("output", folder_name)
