@@ -404,40 +404,6 @@ plt.title(
 gain_trend_filename = "gain_chs_trend_" + str(max_dac_inj_gain_linear) + ".pdf"
 plt.savefig(os.path.join(gain_folder_linear, gain_trend_filename))
 
-
-# # Plot 88 ADU -> keV dispersion over all channels
-# plt.clf()
-# cadmium_peak_val = np.zeros(shape=(len(channels), 1))
-# cadmium_peak_error = np.zeros(shape=(len(channels), 1))
-# for i in channels:
-#     cadmium_peak_val[i] = cadmium_peak * gains_lin[i]
-#     cadmium_peak_error[i] = 88.0 - cadmium_peak_val[i]
-
-# binwidth = 0.1
-# (n, bins, patches) = plt.hist(cadmium_peak_error)
-
-# # Gaussian fit of data
-# (mu, sigma) = norm.fit(cadmium_peak_error)
-
-# matplotlib.pyplot.text(
-#     0.1,
-#     max(n),
-#     "$\mu$ = "
-#     + str(round(mu, 2))
-#     + " keV\n $\sigma$ = "
-#     + str(round(sigma, 2))
-#     + " keV",
-#     fontsize=12,
-#     verticalalignment="top",
-# )
-
-# plt.xlabel("Error [keV]")
-# plt.ylabel("Occurences")
-# plt.title("\\textbf{88 keV peak dispersion}")
-# peak_dispersion_filename = "88keV_peak_dispersion.pdf"
-# plt.savefig(os.path.join(gain_folder_linear, peak_dispersion_filename))
-
-
 # Plot histogram of pedestals obtained from linear interpolation
 plt.clf()
 binwidth = 15
@@ -544,40 +510,6 @@ plt.title(
 )
 gain_trend_filename = "gain_chs_trend_" + str(max_dac_inj_gain_cubic) + ".pdf"
 plt.savefig(os.path.join(gain_folder_cubic, gain_trend_filename))
-
-
-# # Plot 88 ADU -> keV dispersion over all channels
-# plt.clf()
-# cadmium_peak_val = np.zeros(shape=(len(channels), 1))
-# cadmium_peak_error = np.zeros(shape=(len(channels), 1))
-# for i in channels:
-#     cadmium_peak_val[i] = cadmium_peak * gains_cubic[i]
-#     cadmium_peak_error[i] = 88.0 - cadmium_peak_val[i]
-
-# binwidth = 0.1
-# (n, bins, patches) = plt.hist(cadmium_peak_error)
-
-# # Gaussian fit of data
-# (mu, sigma) = norm.fit(cadmium_peak_error)
-
-# matplotlib.pyplot.text(
-#     0.1,
-#     max(n),
-#     "$\mu$ = "
-#     + str(round(mu, 2))
-#     + " keV\n $\sigma$ = "
-#     + str(round(sigma, 2))
-#     + " keV",
-#     fontsize=12,
-#     verticalalignment="top",
-# )
-
-# plt.xlabel("Error [keV]")
-# plt.ylabel("Occurences")
-# plt.title("\\textbf{88 keV peak dispersion}")
-# peak_dispersion_filename = "88keV_peak_dispersion.pdf"
-# plt.savefig(os.path.join(gain_folder_cubic, peak_dispersion_filename))
-
 
 # Plot histogram of pedestals obtained from cubic interpolation
 plt.clf()
@@ -803,30 +735,31 @@ for ch in channels:
             binwidth,
         ),
         label="keV",
-        alpha=0.5,
+        alpha=1,
     )
 
     max1 = max(n1)
 
-    (n2, bins, patches) = plt.hist(
-        events_data_removed_lim,
-        bins=np.arange(
-            int(min(events_data_removed)),
-            int(max(events_data_removed)) + binwidth,
-            binwidth,
-        ),
-        label="ADU",
-        alpha=0.5,
-    )
+    # (n2, bins, patches) = plt.hist(
+    #     events_data_removed_lim,
+    #     bins=np.arange(
+    #         int(min(events_data_removed)),
+    #         int(max(events_data_removed)) + binwidth,
+    #         binwidth,
+    #     ),
+    #     label="ADU",
+    #     alpha=0.5,
+    # )
 
-    max2 = max(n2)
+    # max2 = max(n2)
 
     plt.xlim(30, 120)
-    plt.ylim(0, max([max1, max2]) + 2)
-    plt.title("\\textbf{Cadmium peak comparison before/after conversion}")
-    plt.xlabel("Incoming energy [ADU, keV]")
+    plt.ylim(0, max1 + 2)
+    # plt.title("\\textbf{Cadmium peak comparison before/after conversion}")
+    plt.title("\\textbf{Cadmium peak after conversion}")
+    plt.xlabel("Incoming energy [keV]")
     plt.ylabel("Occurrences")
-    plt.legend()
+    # plt.legend()
     plt.savefig(os.path.join(cadmium_peak_folder, "peak_ch" + str(ch) + ".pdf"))
 
     # Write converted data to file
