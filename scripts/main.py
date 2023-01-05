@@ -20,7 +20,7 @@ folder_name = "IT_400_xray_205_FTh_3mins_tau4"
 
 # Overwrite
 filepath_xray_data = r"input\xray_data\xray_205_400_FTh_2mins.txt"
-folder_name = "xray_205_400_FTh_2mins_1"
+folder_name = "xray_205_400_FTh_2mins"
 
 # *** CONFIGURATION ***
 ch_min = 0
