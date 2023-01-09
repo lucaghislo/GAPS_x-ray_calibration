@@ -29,7 +29,7 @@ ASIC_number = 0
 pt = 5
 cadmium_peak = 88.0  # keV
 
-# Maximum DAC_inj value for linear gain calculation in x-ray region
+# Maximum DAC_inj value for gain calculation in x-ray region
 max_dac_inj_gain_linear = 200
 max_dac_inj_gain_cubic = 500
 
@@ -224,7 +224,7 @@ for ch in channels:
     plt.xlim(xmin=0, xmax=300)
     plt.yscale("log")
     plt.xlabel("Energy [ADU]")
-    plt.ylabel("Occurences")
+    plt.ylabel("occurrences")
     plt.title(
         "\\textbf{Raw data for channel " + str(ch) + " at tau " + str(pt) + "}",
         fontweight="bold",
@@ -287,7 +287,7 @@ for ch in channels:
     plt.xlim(xmin=0, xmax=300)
     plt.yscale("log")
     plt.xlabel("Energy [ADU]")
-    plt.ylabel("Occurences")
+    plt.ylabel("occurrences")
     plt.title(
         "\\textbf{Raw data for channel "
         + str(ch)
@@ -323,7 +323,7 @@ for ch in channels:
         raw_noped_data_file,
         "w",
     ) as fp:
-        for item in events_data:
+        for item in events_data_removed:
             fp.write(str(item) + "\n")
 
     fp.close()
@@ -593,7 +593,7 @@ for ch in channels:
     plt.xlim(xmin=0, xmax=300)
     plt.yscale("log")
     plt.xlabel("Energy [keV]")
-    plt.ylabel("Occurences")
+    plt.ylabel("occurrences")
     plt.title(
         "\\textbf{Converted data for channel "
         + str(ch)
@@ -631,7 +631,7 @@ for ch in channels:
         converted_noped_data_file,
         "w",
     ) as fp:
-        for item in events_data:
+        for item in events_data_removed_kev:
             fp.write(str(item) + "\n")
 
     fp.close()
@@ -676,7 +676,7 @@ for ch in channels:
     plt.xlim(xmin=0, xmax=300)
     plt.yscale("log")
     plt.xlabel("Energy [keV]")
-    plt.ylabel("Occurences")
+    plt.ylabel("occurrences")
     plt.title(
         "\\textbf{Converted data for channel "
         + str(ch)
@@ -774,7 +774,7 @@ for ch in channels:
         converted_noped_data_file,
         "w",
     ) as fp:
-        for item in events_data:
+        for item in events_data_removed_kev:
             fp.write(str(item) + "\n")
 
     fp.close()

@@ -15,6 +15,7 @@ def cubic_model(x, q, m1, m2, m3):
     return q + m1 * x + m2 * (x ** 2) + m3 * (x ** 3)
 
 
+# Linear interpolation
 def get_linear_gain(filepath, ch, pt, max_dacinj, outpath=""):
 
     # Get fdt data for given ch and pt
@@ -65,8 +66,7 @@ def get_linear_gain(filepath, ch, pt, max_dacinj, outpath=""):
     return gain, pedestal
 
 
-# TODO
-# Sistemare parametri del modello
+# Cubic interpolation
 def get_cubic_gain(filepath, ch, pt, max_dacinj, outpath=""):
 
     # Get fdt data for given ch and pt
