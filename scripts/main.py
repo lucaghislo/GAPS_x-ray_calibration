@@ -16,7 +16,8 @@ from calculate_xray_gain import *
 filepath_xray_data = r"input\xray_data\IT_400_xray_205_FTh_3mins_tau4.txt"
 filepath_pedestal_data = r"input\pedestal_data\L4R0M0_Pedestals.dat"
 filepath_fdt_data = r"input\transfer_function_data\L4R0M0_TransferFunction.dat"
-folder_name = "IT_400_xray_205_FTh_3mins_tau4_2"
+folderpath_CMN_removed = r"input\CMN_removed"
+folder_name = "IT_400_xray_205_FTh_3mins_tau4_3"
 
 # Overwrite
 # filepath_xray_data = r"input\xray_data\xray_205_400_FTh_2mins.txt"
@@ -268,6 +269,7 @@ if not os.path.exists(raw_noped_plot_folder):
     os.mkdir(raw_noped_plot_folder)
 
 print("** Saving raw data plots without pedestal **")
+all_events_raw = []
 for ch in channels:
     plt.clf()
     binwidth = 1
@@ -296,6 +298,9 @@ for ch in channels:
         + " without pedestal}",
         fontweight="bold",
     )
+
+    for e in events_data_removed:
+        all_events_raw.append(e)
 
     filename_raw_noped_data_plot = (
         "ch" + str(ch) + "_" + "pt" + str(pt) + "_raw_no-pedestal.pdf"
@@ -655,6 +660,7 @@ if not os.path.exists(converted_noped_plot_folder):
 
 print("\n** Saving converted data plots without pedestal **")
 plt.clf()
+all_events_cubic = []
 for ch in channels:
     plt.clf()
     binwidth = 1
@@ -673,6 +679,10 @@ for ch in channels:
         ),
         color="blue",
     )
+
+    for e in events_data_removed_kev:
+        all_events_cubic.append(e)
+
     plt.xlim(xmin=0, xmax=300)
     plt.yscale("log")
     plt.xlabel("Energy [keV]")
@@ -740,26 +750,11 @@ for ch in channels:
 
     max1 = max(n1)
 
-    # (n2, bins, patches) = plt.hist(
-    #     events_data_removed_lim,
-    #     bins=np.arange(
-    #         int(min(events_data_removed)),
-    #         int(max(events_data_removed)) + binwidth,
-    #         binwidth,
-    #     ),
-    #     label="ADU",
-    #     alpha=0.5,
-    # )
-
-    # max2 = max(n2)
-
     plt.xlim(30, 120)
     plt.ylim(0, max1 + 2)
-    # plt.title("\\textbf{Cadmium peak comparison before/after conversion}")
     plt.title("\\textbf{Cadmium peak after conversion}")
     plt.xlabel("Incoming energy [keV]")
     plt.ylabel("Occurrences")
-    # plt.legend()
     plt.savefig(os.path.join(cadmium_peak_folder, "peak_ch" + str(ch) + ".pdf"))
 
     # Write converted data to file
@@ -782,3 +777,85 @@ for ch in channels:
     print("* Saved ch. " + str(ch) + " *")
     print("plot: " + str(filename_converted_noped_data_plot))
     print("data: " + str(filename_converted_noped_data_file) + "\n")
+
+
+# Plot conversion and comparison after CMN removal
+all_CMN_kev = []
+all_CMN_adu = []
+for ch in channels:
+    print(ch)
+
+    CMN_filepath = os.path.join(folderpath_CMN_removed, "ch" + str(ch) + ".csv")
+    CMN_data_raw = pd.read_csv(CMN_filepath)
+    CMN_data = CMN_data_raw.to_numpy()
+
+    print(CMN_data)
+
+    gain, pedestal = get_cubic_gain(filepath_fdt_data, ch, pt, max_dac_inj_gain_cubic)
+    events_data_removed_CMN = [dat_i * gain for dat_i in CMN_data]
+
+    for e in events_data_removed_CMN:
+        all_CMN_kev.append(e)
+
+    for e in CMN_data:
+        all_CMN_adu.append(e)
+
+plt.clf()
+all_CMN_adu_lim = []
+all_CMN_kev_lim = []
+
+for i in range(0, len(all_CMN_adu)):
+    e = all_CMN_adu[i]
+    if e >= 0 and e <= 150:
+        all_CMN_adu_lim.append(e[0])
+
+for i in range(0, len(all_CMN_kev)):
+    e = all_CMN_kev[i]
+    if e >= 0 and e <= 150:
+        all_CMN_kev_lim.append(e[0])
+
+plt.hist(all_CMN_adu_lim, alpha=0.5, bins=150)
+plt.hist(all_CMN_kev_lim, alpha=0.5, bins=150)
+plt.xlim(0, 150)
+plt.ylim(0, 1000)
+plt.title(r"\textbf{Comparison before and after conversion without CMN}")
+plt.xlabel("Incoming energy [ADU, keV]")
+plt.ylabel("Occurrences")
+# plt.yscale("log")
+
+CMN_comparison_filpath = os.path.join(
+    cadmium_peak_folder, "CMN_comparison_all_channels_lin.pdf"
+)
+
+plt.savefig(CMN_comparison_filpath)
+
+
+# Plot sum of channel comparison before and after conversion
+plt.clf()
+all_events_raw_lim = []
+all_events_cubic_lim = []
+
+for i in range(0, len(all_events_raw)):
+    e = all_events_raw[i]
+    if e >= 0 and e <= 150:
+        all_events_raw_lim.append(e)
+
+for i in range(0, len(all_events_cubic)):
+    e = all_events_cubic[i]
+    if e >= 0 and e <= 150:
+        all_events_cubic_lim.append(e)
+
+plt.hist(all_events_raw_lim, bins=150, alpha=0.5)
+plt.hist(all_events_cubic_lim, bins=150, alpha=0.5)
+plt.xlim(0, 150)
+plt.ylim(0, 1000)
+plt.title(r"\textbf{Comparison before and after conversion over all channels}")
+plt.xlabel("Incoming energy [ADU, keV]")
+plt.ylabel("Occurrences")
+# plt.yscale("log")
+
+peak_comparison_filpath = os.path.join(
+    cadmium_peak_folder, "peak_comparison_all_channels_lin.pdf"
+)
+
+plt.savefig(peak_comparison_filpath)
