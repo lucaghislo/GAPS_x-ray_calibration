@@ -17,7 +17,7 @@ filepath_xray_data = r"input\xray_data\IT_400_xray_205_FTh_3mins_tau4.txt"
 filepath_pedestal_data = r"input\pedestal_data\L4R0M0_Pedestals.dat"
 filepath_fdt_data = r"input\transfer_function_data\L4R0M0_TransferFunction.dat"
 folderpath_CMN_removed = r"input\CMN_removed"
-folder_name = "IT_400_xray_205_FTh_3mins_tau4_3"
+folder_name = "IT_400_xray_205_FTh_3mins_tau4_4"
 
 # Overwrite
 # filepath_xray_data = r"input\xray_data\xray_205_400_FTh_2mins.txt"
@@ -31,8 +31,8 @@ pt = 4
 cadmium_peak = 88.0  # keV
 
 # Maximum DAC_inj value for gain calculation in x-ray region
-max_dac_inj_gain_linear = 200
-max_dac_inj_gain_cubic = 500
+max_dac_inj_gain_linear = 300
+max_dac_inj_gain_cubic = 400
 
 channels = range(ch_min, ch_max + 1)
 output_folder_path = os.path.join("output", folder_name)
