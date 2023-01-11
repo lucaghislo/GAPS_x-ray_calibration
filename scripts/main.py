@@ -13,11 +13,17 @@ from read_transfer_function import *
 from calculate_xray_gain import *
 
 # *** X-RAY DATA, PEDESTAL AND TRANSFER FUNCTION DATA ***
-filepath_xray_data = r"input\xray_data\IT_400_xray_205_FTh_3mins_tau4.txt"
-filepath_pedestal_data = r"input\pedestal_data\L4R0M0_Pedestals.dat"
-filepath_fdt_data = r"input\transfer_function_data\L4R0M0_TransferFunction.dat"
+# filepath_xray_data = r"input\xray_data\IT_400_xray_205_FTh_3mins_tau4.txt"
+# filepath_pedestal_data = r"input\pedestal_data\L4R0M0_Pedestals.dat"
+# filepath_fdt_data = r"input\transfer_function_data\L4R0M0_TransferFunction.dat"
+# folderpath_CMN_removed = r"input\CMN_removed"
+# folder_name = "IT_400_xray_205_FTh_3mins_tau4_4"
+
+filepath_xray_data = r"input\xray_data\FTHR_thr_211_ch0-28.txt"
+filepath_pedestal_data = r"input\pedestal_data\Pedestals.dat"
+filepath_fdt_data = r"input\transfer_function_data\TransferFunction.dat"
 folderpath_CMN_removed = r"input\CMN_removed"
-folder_name = "IT_400_xray_205_FTh_3mins_tau4_4"
+folder_name = "FTHR_thr_211_ch0-28"
 
 # Overwrite
 # filepath_xray_data = r"input\xray_data\xray_205_400_FTh_2mins.txt"
@@ -25,9 +31,9 @@ folder_name = "IT_400_xray_205_FTh_3mins_tau4_4"
 
 # *** CONFIGURATION ***
 ch_min = 0
-ch_max = 31
-ASIC_number = 0
-pt = 4
+ch_max = 28
+ASIC_number = 2
+pt = 5
 cadmium_peak = 88.0  # keV
 
 # Maximum DAC_inj value for gain calculation in x-ray region
