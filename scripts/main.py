@@ -19,11 +19,11 @@ from calculate_xray_gain import *
 # folderpath_CMN_removed = r"input\CMN_removed"
 # folder_name = "IT_400_xray_205_FTh_3mins_tau4_4"
 
-filepath_xray_data = r"input\xray_data\FTHR_thr_211_ch0-28.txt"
+filepath_xray_data = r"input\xray_data\FTHR_thr_211_ch0-28_2min.txt"
 filepath_pedestal_data = r"input\pedestal_data\Pedestals.dat"
 filepath_fdt_data = r"input\transfer_function_data\TransferFunction.dat"
 folderpath_CMN_removed = r"input\CMN_removed"
-folder_name = "FTHR_thr_211_ch0-28"
+folder_name = "FTHR_thr_211_ch0-28_2min_2"
 
 # Overwrite
 # filepath_xray_data = r"input\xray_data\xray_205_400_FTh_2mins.txt"
@@ -31,13 +31,13 @@ folder_name = "FTHR_thr_211_ch0-28"
 
 # *** CONFIGURATION ***
 ch_min = 0
-ch_max = 28
+ch_max = 31
 ASIC_number = 2
 pt = 5
 cadmium_peak = 88.0  # keV
 
 # Maximum DAC_inj value for gain calculation in x-ray region
-max_dac_inj_gain_linear = 300
+max_dac_inj_gain_linear = 200
 max_dac_inj_gain_cubic = 400
 
 channels = range(ch_min, ch_max + 1)
@@ -359,15 +359,34 @@ if not os.path.exists(gain_folder_linear):
 gain_data_file_name = (
     "allchs_pt" + str(pt) + "_low_energy_gain_" + str(max_dac_inj_gain_linear) + ".dat"
 )
+
+gain_data_file_name_realfdt = (
+    "allchs_pt"
+    + str(pt)
+    + "_low_energy_gain_"
+    + str(max_dac_inj_gain_linear)
+    + "_realfdt.dat"
+)
+
 gain_data_file = os.path.join(
     gain_folder_linear,
     gain_data_file_name,
+)
+
+gain_data_file_realfdt = os.path.join(
+    gain_folder_linear,
+    gain_data_file_name_realfdt,
 )
 
 gain_file = open(gain_data_file, "w")
 gain_file.write("")
 gain_file.close()
 gain_file = open(gain_data_file, "a")
+
+gain_file_realfdt = open(gain_data_file_realfdt, "w")
+gain_file_realfdt.write("")
+gain_file_realfdt.close()
+gain_file_realfdt = open(gain_data_file_realfdt, "a")
 
 interpolation_folder = os.path.join(gain_folder_linear, "ch_interpolation")
 
@@ -390,17 +409,38 @@ for ch in channels:
     )
     inter_filepath = os.path.join(interpolation_folder, inter_filename)
 
+    inter_filename_realfdt = (
+        "ch"
+        + str(ch)
+        + "_pt"
+        + str(pt)
+        + "_interp_"
+        + str(max_dac_inj_gain_linear)
+        + "_realfdt.pdf"
+    )
+    inter_filepath_realfdt = os.path.join(interpolation_folder, inter_filename_realfdt)
+
     print("* Saved ch. " + str(ch) + " *")
+
+    gain_real, pedestal_real = get_linear_gain_realfdt(
+        filepath_fdt_data, ch, pt, max_dac_inj_gain_linear, inter_filepath_realfdt
+    )
+
+    gain_file_realfdt.write(
+        str(ch) + "\t" + str(gain_real) + "\t" + str(pedestal_real) + "\n"
+    )
 
     gain, pedestal = get_linear_gain(
         filepath_fdt_data, ch, pt, max_dac_inj_gain_linear, inter_filepath
     )
+
     gain_file.write(str(ch) + "\t" + str(gain) + "\t" + str(pedestal) + "\n")
     gains_lin[count] = gain
     pedestals_lin[count] = pedestal
     count = count + 1
 
 gain_file.close()
+gain_file_realfdt.close()
 
 # Plot gain per channel
 plt.clf()
@@ -466,15 +506,34 @@ if not os.path.exists(gain_folder_cubic):
 gain_data_file_name = (
     "allchs_pt" + str(pt) + "_low_energy_gain_" + str(max_dac_inj_gain_cubic) + ".dat"
 )
+
+gain_data_file_name_realfdt = (
+    "allchs_pt"
+    + str(pt)
+    + "_low_energy_gain_"
+    + str(max_dac_inj_gain_cubic)
+    + "_realfdt.dat"
+)
+
 gain_data_file = os.path.join(
     gain_folder_cubic,
     gain_data_file_name,
+)
+
+gain_data_file_realfdt = os.path.join(
+    gain_folder_cubic,
+    gain_data_file_name_realfdt,
 )
 
 gain_file = open(gain_data_file, "w")
 gain_file.write("")
 gain_file.close()
 gain_file = open(gain_data_file, "a")
+
+gain_file_realfdt = open(gain_data_file_realfdt, "w")
+gain_file_realfdt.write("")
+gain_file_realfdt.close()
+gain_file_realfdt = open(gain_data_file_realfdt, "a")
 
 interpolation_folder = os.path.join(gain_folder_cubic, "ch_interpolation")
 
@@ -497,7 +556,24 @@ for ch in channels:
     )
     inter_filepath = os.path.join(interpolation_folder, inter_filename)
 
+    inter_filename_realfdt = (
+        "ch"
+        + str(ch)
+        + "_pt"
+        + str(pt)
+        + "_interp_"
+        + str(max_dac_inj_gain_cubic)
+        + "_realfdt.pdf"
+    )
+    inter_filepath_realfdt = os.path.join(interpolation_folder, inter_filename_realfdt)
+
     print("* Saved ch. " + str(ch) + " *")
+
+    gain_real, pedestal_real = get_cubic_gain_realfdt(
+        filepath_fdt_data, ch, pt, max_dac_inj_gain_cubic, inter_filepath_realfdt
+    )
+
+    gain_file_realfdt.write(str(ch) + "\t" + str(gain) + "\t" + str(pedestal) + "\n")
 
     gain, pedestal = get_cubic_gain(
         filepath_fdt_data, ch, pt, max_dac_inj_gain_cubic, inter_filepath
@@ -508,6 +584,7 @@ for ch in channels:
     count = count + 1
 
 gain_file.close()
+gain_file_realfdt.close()
 
 # Plot gain per channel
 plt.clf()
